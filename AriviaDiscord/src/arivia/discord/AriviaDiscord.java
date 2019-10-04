@@ -4,9 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.RichPresence;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -38,7 +35,7 @@ public class AriviaDiscord extends ListenerAdapter {
 	public static long time = System.currentTimeMillis();
 	public static void main(String[] args) throws LoginException, IOException, InterruptedException {
 		data = new PrintStream(new FileOutputStream(new File("learning.txt"), true), true);
-		core.start();
+		core.start(args[1]);
 		
 		JDABuilder builder = new JDABuilder(AccountType.BOT);
 		builder.setToken(args[0]);
@@ -80,58 +77,58 @@ public class AriviaDiscord extends ListenerAdapter {
 			}
 		});
 		
-		Calendar cal = new GregorianCalendar();
-		List<Guild> guilds = jda.getGuilds();
-		for (Guild g : guilds) {
-			List<TextChannel> channels = g.getTextChannels();
-			boolean found = false;
-			for (TextChannel c : channels) {
-				if (c.getName().equals("botchat")) {
-					if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
-						c.sendMessage("Good morning!").queue();
-					} else {
-						if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
-							c.sendMessage("Good afternoon!").queue();
-						} else {
-							c.sendMessage("Good evening!").queue();
-						}
-					}
-					found = true;
-				}
-			}
-			if (!found) {
-				for (TextChannel c : channels) {
-					if (c.getName().equals("offtopic")) {
-						if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
-							c.sendMessage("Good morning!").queue();
-						} else {
-							if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
-								c.sendMessage("Good afternoon!").queue();
-							} else {
-								c.sendMessage("Good evening!").queue();
-							}
-						}
-						found = true;
-					}
-				}
-			}
-			if (!found) {
-				for (TextChannel c : channels) {
-					if (c.getName().equals("general")) {
-						if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
-							c.sendMessage("Good morning!").queue();
-						} else {
-							if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
-								c.sendMessage("Good afternoon!").queue();
-							} else {
-								c.sendMessage("Good evening!").queue();
-							}
-						}
-						found = true;
-					}
-				}
-			}
-		}
+//		Calendar cal = new GregorianCalendar();
+//		List<Guild> guilds = jda.getGuilds();
+//		for (Guild g : guilds) {
+//			List<TextChannel> channels = g.getTextChannels();
+//			boolean found = false;
+//			for (TextChannel c : channels) {
+//				if (c.getName().equals("botchat")) {
+//					if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
+//						c.sendMessage("Good morning!").queue();
+//					} else {
+//						if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
+//							c.sendMessage("Good afternoon!").queue();
+//						} else {
+//							c.sendMessage("Good evening!").queue();
+//						}
+//					}
+//					found = true;
+//				}
+//			}
+//			if (!found) {
+//				for (TextChannel c : channels) {
+//					if (c.getName().equals("offtopic")) {
+//						if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
+//							c.sendMessage("Good morning!").queue();
+//						} else {
+//							if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
+//								c.sendMessage("Good afternoon!").queue();
+//							} else {
+//								c.sendMessage("Good evening!").queue();
+//							}
+//						}
+//						found = true;
+//					}
+//				}
+//			}
+//			if (!found) {
+//				for (TextChannel c : channels) {
+//					if (c.getName().equals("general")) {
+//						if (cal.get(Calendar.HOUR_OF_DAY) < 12) {
+//							c.sendMessage("Good morning!").queue();
+//						} else {
+//							if (cal.get(Calendar.HOUR_OF_DAY) < 17) {
+//								c.sendMessage("Good afternoon!").queue();
+//							} else {
+//								c.sendMessage("Good evening!").queue();
+//							}
+//						}
+//						found = true;
+//					}
+//				}
+//			}
+//		}
 		
 		new Thread("Input") {
 			public void run() {
@@ -220,22 +217,16 @@ public class AriviaDiscord extends ListenerAdapter {
 						System.out.println("help - Displays help.");
 						System.out.println("fix - Exits the application for maintenence.");
 					}
-				}
-				s.close();
-				System.out.println("Exiting");
-				List<Guild> guilds = jda.getGuilds();
-				for (Guild g : guilds) {
-					List<TextChannel> channels = g.getTextChannels();
-					for (TextChannel c : channels) {
-						if (c.getName().equals("botchat")) {
-							if (cal.get(Calendar.HOUR_OF_DAY) > 17) {
-								c.sendMessage("Good night.").queue();
-							} else {
-								c.sendMessage("Goodbye.").queue();
-							}
+					if (ln.equals("reload")) {
+						core = new AriviaCore();
+						try {
+							core.start(args[1]);
+						} catch (IOException e) {
+							e.printStackTrace();
 						}
 					}
 				}
+				s.close();
 				System.out.println("Going offline");
 				jda.getPresence().setPresence(maintenence ? OnlineStatus.DO_NOT_DISTURB : OnlineStatus.OFFLINE, null);
 				try {
@@ -278,11 +269,11 @@ public class AriviaDiscord extends ListenerAdapter {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		try {
 			if (event.getAuthor() == jda.getSelfUser()) return;
-			data.println(event.getMessage().getContentDisplay().replace("@Arivia", ""));
-			if (event.getMessage().isMentioned(jda.getSelfUser(), MentionType.USER) || event.getMessage().getContentStripped().toLowerCase().contains("arivia")) {
-				System.out.println("Message recieved " + event.getAuthor().getName() + " " + event.getMessage().getContentStripped());
+			if (!event.getAuthor().isBot()) data.println(event.getMessage().getContentDisplay().replace("@Arivia", "").trim());
+			if (event.getMessage().isMentioned(jda.getSelfUser(), MentionType.USER) || event.getMessage().getContentStripped().toLowerCase().contains("@arivia")) {
+				System.out.println("Message recieved " + event.getAuthor().getName() + " " + event.getMessage().getContentStripped().trim());
 				
-				getConnection(event).queue(event.getMessage().getContentDisplay());
+				getConnection(event).queue(event.getMessage().getContentDisplay().replace("@Arivia", "").trim());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

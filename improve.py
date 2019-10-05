@@ -1,3 +1,7 @@
+"""
+A script that updates an ebf file to allow for better learning.
+"""
+
 file = open("learning.txt", mode="r")
 
 def quick_replace(s):

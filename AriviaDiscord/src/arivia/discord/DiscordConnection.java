@@ -60,4 +60,14 @@ public class DiscordConnection implements Connection {
 		queue.add(s);
 	}
 
+	@Override
+	public boolean allowMaths() {
+		return Settings.allowMaths(first.getChannel().getIdLong());
+	}
+
+	@Override
+	public boolean allowBees() {
+		return Settings.allowBees(first.getChannel().getIdLong());
+	}
+
 }

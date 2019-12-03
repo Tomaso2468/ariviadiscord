@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,8 +18,10 @@ import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Activity.ActivityType;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.RichPresence;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -212,10 +215,47 @@ public class AriviaDiscord extends ListenerAdapter {
 						maintenence = true;
 						break;
 					}
+					if (ln.startsWith("puppet|")) {
+						try {
+							List<String> shortcuts = Files.readAllLines(new File("shortcuts.txt").toPath());
+							String[] cmd = ln.split("\\|");
+							for (int i = 0; i < args.length; i++) {
+								for (String string : shortcuts) {
+									if (cmd[i].equals(string.split("=")[0])) {
+										cmd[i] = string.split("=")[1];
+									}
+								}
+							}
+							Guild g = jda.getGuildById(Long.valueOf(cmd[1]));
+							for (TextChannel c : g.getTextChannels()){
+								try {
+									if (c.getIdLong() == Long.valueOf(cmd[2])) {
+										if (cmd[3].equals("no")) {
+											c.sendMessage(cmd[4]).queue();
+										} else {
+											c.sendMessage("<@" + cmd[3] + "> " + cmd[4]).queue();;
+										}
+									}
+								} catch (NumberFormatException e) {
+									if (c.getName().equalsIgnoreCase(cmd[2])) {
+										if (cmd[3].equals("no")) {
+											c.sendMessage(cmd[4]).queue();
+										} else {
+											c.sendMessage("<@" + cmd[3] + "> " + cmd[4]).queue();;
+										}
+									}
+								}
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 					if (ln.equals("help")) {
 						System.out.println("exit - Exits the application.");
 						System.out.println("help - Displays help.");
 						System.out.println("fix - Exits the application for maintenence.");
+						System.out.println("reload - reloads.");
+						System.out.println("puppet|[server]|[channel]|[person/no]|[message] - puppets.");
 					}
 					if (ln.equals("reload")) {
 						core = new AriviaCore();
@@ -269,6 +309,18 @@ public class AriviaDiscord extends ListenerAdapter {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		try {
 			if (event.getAuthor() == jda.getSelfUser()) return;
+			if (event.getGuild().getMember(event.getAuthor()).hasPermission(Permission.MANAGE_WEBHOOKS)) {
+				if (event.getMessage().getContentRaw().equals("!arivia ban math")) {
+					Settings.banMaths(event.getMessage().getChannel().getIdLong());
+					event.getChannel().sendMessage("Banned the arivia math module for this channel.").queue();
+					return;
+				}
+				if (event.getMessage().getContentRaw().equals("!arivia ban mbees")) {
+					Settings.banBees(event.getMessage().getChannel().getIdLong());
+					event.getChannel().sendMessage("Banned the arivia bees module for this channel.").queue();
+					return;
+				}
+			}
 			if (!event.getAuthor().isBot()) data.println(event.getMessage().getContentDisplay().replace("@Arivia", "").trim());
 			if (event.getMessage().isMentioned(jda.getSelfUser(), MentionType.USER) || event.getMessage().getContentStripped().toLowerCase().contains("@arivia")) {
 				System.out.println("Message recieved " + event.getAuthor().getName() + " " + event.getMessage().getContentStripped().trim());

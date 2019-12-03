@@ -315,7 +315,7 @@ public class AriviaDiscord extends ListenerAdapter {
 					event.getChannel().sendMessage("Banned the arivia math module for this channel.").queue();
 					return;
 				}
-				if (event.getMessage().getContentRaw().equals("!arivia ban mbees")) {
+				if (event.getMessage().getContentRaw().equals("!arivia ban bees")) {
 					Settings.banBees(event.getMessage().getChannel().getIdLong());
 					event.getChannel().sendMessage("Banned the arivia bees module for this channel.").queue();
 					return;
